@@ -1,4 +1,5 @@
 name: Sync
+
 on:
   schedule:
     - cron: "0 */6 * * *"
@@ -20,4 +21,4 @@ jobs:
             -e GARMIN_PASSWORD \
             -e FITBIT_LOGIN \
             -e FITBIT_PASSWORD \
-            alexxit/smartscaleconnect:latest
+            alexxit/smartscaleconnect:latest -once
