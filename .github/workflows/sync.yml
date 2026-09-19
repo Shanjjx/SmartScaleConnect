@@ -16,7 +16,7 @@ jobs:
           FITBIT_LOGIN: ${{ secrets.FITBIT_LOGIN }}
           FITBIT_PASSWORD: ${{ secrets.FITBIT_PASSWORD }}
         run: |
-          timeout 35s docker run --rm \
+          timeout 180s docker run --rm \
             -e GARMIN_LOGIN \
             -e GARMIN_PASSWORD \
             -e FITBIT_LOGIN \
