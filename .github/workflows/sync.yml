@@ -9,8 +9,4 @@ jobs:
     steps:
       - name: Inspect container structure
         run: |
-          docker run --rm --entrypoint sh alexxit/smartscaleconnect:latest -c "
-            echo '--- Root Verzeichnis ---'
-            ls -la /
-            echo '--- Suche nach Programmdateien ---'
-            which smartscaleconnect || which scaleconnect || find / -maxdepth 3 -name '*scale*' 2>/dev/null
+          docker run --rm --entrypoint /bin/sh alexxit/smartscaleconnect:latest -c 'ls -la /; find / -maxdepth 3 -name "*scale*" 2>/dev/null'
