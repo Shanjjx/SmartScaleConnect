@@ -1,15 +1,51 @@
 name: Sync
 
 on:
+  schedule:
+    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Inspect account parsing
+      - name: Run sync
+        env:
+          GARMIN_LOGIN: ${{ secrets.GARMIN_LOGIN }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          FITBIT_LOGIN: ${{ secrets.FITBIT_LOGIN }}
+          FITBIT_PASSWORD: ${{ secrets.FITBIT_PASSWORD }}
         run: |
-          docker run --rm --entrypoint /bin/sh alexxit/smartscaleconnect:latest -c '
-            strings $(which scaleconnect) | grep -A 5 -B 5 "unsupported type" || true
-            strings $(which scaleconnect) | grep -C 3 "GetAccount" || true
+          mkdir -p config
+          python3 -c '
+          import os, yaml
+          cfg = {
+              "fitbit": {
+                  "sync_flo": {
+                      "login": os.environ.get("FITBIT_LOGIN", "").strip(),
+                      "password": os.environ.get("FITBIT_PASSWORD", "").strip()
+                  }
+              },
+              "garmin": {
+                  "sync_flo": {
+                      "login": os.environ.get("GARMIN_LOGIN", "").strip(),
+                      "password": os.environ.get("GARMIN_PASSWORD", "").strip()
+                  }
+              },
+              "sync_flo": {
+                  "from": "fitbit.sync_flo",
+                  "to": "garmin.sync_flo"
+              }
+          }
+          with open("config/scaleconnect.yaml", "w") as f:
+              yaml.dump(cfg, f, default_flow_style=False)
           '
+
+          echo "=== Erstellte Konfiguration ==="
+          cat config/scaleconnect.yaml | sed 's/password:.*/password: ***/'
+
+          echo "Starte Synchronisation..."
+          docker run --rm \
+            -v $(pwd)/config:/config \
+            alexxit/smartscaleconnect:latest \
+            scaleconnect -c /config/scaleconnect.yaml
