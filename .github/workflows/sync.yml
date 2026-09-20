@@ -1,42 +1,19 @@
 name: Sync
 
 on:
-  schedule:
-    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Run sync
-        env:
-          GARMIN_LOGIN: ${{ secrets.GARMIN_LOGIN }}
-          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
-          FITBIT_LOGIN: ${{ secrets.FITBIT_LOGIN }}
-          FITBIT_PASSWORD: ${{ secrets.FITBIT_PASSWORD }}
+      - name: Inspect container
         run: |
-          mkdir -p data
-          cat <<EOF > data/config.yaml
-          log:
-            level: debug
-          garmin:
-            login: "$GARMIN_LOGIN"
-            password: "$GARMIN_PASSWORD"
-          fitbit:
-            login: "$FITBIT_LOGIN"
-            password: "$FITBIT_PASSWORD"
-          EOF
+          echo "=== HELP / ENTRYPOINT ==="
+          docker run --rm alexxit/smartscaleconnect:latest --help || true
 
-          echo "Starte scaleconnect..."
-          docker run --rm -t \
-            -e PYTHONUNBUFFERED=1 \
-            -v $(pwd)/data:/data \
-            alexxit/smartscaleconnect:latest &
-          
-          CONTAINER_PID=$!
-          sleep 40
-          kill $CONTAINER_PID 2>/dev/null || true
+          echo "=== DATEIEN IM IMAGE ==="
+          docker run --rm alexxit/smartscaleconnect:latest ls -la /app || true
 
-          echo "--- In data erstellte Dateien ---"
-          ls -la data/
+          echo "=== PYTHON ENTRYPOINT DATEI ==="
+          docker run --rm alexxit/smartscaleconnect:latest cat /app/main.py 2>/dev/null || docker run --rm alexxit/smartscaleconnect:latest cat /app/app.py 2>/dev/null || true
