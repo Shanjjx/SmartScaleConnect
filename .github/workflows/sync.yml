@@ -19,23 +19,28 @@ jobs:
           mkdir -p config
           python3 -c '
           import os, yaml
-          cfg = {
-              "from": {
-                  "fitbit": {
-                      "login": os.environ.get("GARMIN_LOGIN", "").strip() if False else os.environ.get("FITBIT_LOGIN", "").strip(),
-                      "password": os.environ.get("FITBIT_PASSWORD", "").strip()
-                  }
-              },
-              "to": {
-                  "garmin": {
-                      "login": os.environ.get("GARMIN_LOGIN", "").strip(),
-                      "password": os.environ.get("GARMIN_PASSWORD", "").strip()
+          cfg = [
+              {
+                  "from": {
+                      "fitbit": {
+                          "login": os.environ.get("FITBIT_LOGIN", "").strip(),
+                          "password": os.environ.get("FITBIT_PASSWORD", "").strip()
+                      }
+                  },
+                  "to": {
+                      "garmin": {
+                          "login": os.environ.get("GARMIN_LOGIN", "").strip(),
+                          "password": os.environ.get("GARMIN_PASSWORD", "").strip()
+                      }
                   }
               }
-          }
+          ]
           with open("config/scaleconnect.yaml", "w") as f:
               yaml.dump(cfg, f, default_flow_style=False)
           '
+
+          echo "=== Generierte Konfigurationsstruktur ==="
+          cat config/scaleconnect.yaml | sed 's/password:.*/password: ***/'
 
           echo "Starte Synchronisation..."
           docker run --rm \
