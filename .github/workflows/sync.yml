@@ -7,6 +7,6 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Inspect container structure
+      - name: Inspect run.sh
         run: |
-          docker run --rm --entrypoint /bin/sh alexxit/smartscaleconnect:latest -c 'ls -la /; find / -maxdepth 3 -name "*scale*" 2>/dev/null'
+          docker run --rm --entrypoint /bin/sh alexxit/smartscaleconnect:latest -c "cat /run.sh"
