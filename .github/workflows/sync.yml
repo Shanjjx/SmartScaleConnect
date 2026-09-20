@@ -7,11 +7,14 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Inspect binary internals
+      - name: Copy binary and inspect
         run: |
-          docker run --rm alexxit/smartscaleconnect:latest sh -c '
-            echo "=== FITBIT & GARMIN OFFSETS ==="
-            strings -t x /bin/scaleconnect | grep -iE "fitbit|garmin|weights\.go" | head -n 40
-            
-            echo "=== SCHEMA & FORMAT STRINGS ==="
-            strings /bin/scaleconnect | grep -E "%s.*%s" | head -n 30
+          docker create --name temp-container alexxit/smartscaleconnect:latest
+          docker cp temp-container:/bin/scaleconnect ./scaleconnect
+          docker rm temp-container
+
+          echo "=== FITBIT & GARMIN VORKOMMNISSE ==="
+          strings -t x ./scaleconnect | grep -iE "fitbit|garmin|weights\.go" | head -n 40
+
+          echo "=== CONFIG / FORMAT STRINGS ==="
+          strings ./scaleconnect | grep -E "%s.*%s" | head -n 30
