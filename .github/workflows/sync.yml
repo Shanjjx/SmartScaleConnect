@@ -16,7 +16,8 @@ jobs:
           FITBIT_LOGIN: ${{ secrets.FITBIT_LOGIN }}
           FITBIT_PASSWORD: ${{ secrets.FITBIT_PASSWORD }}
         run: |
-          cat <<EOF > config.yaml
+          mkdir -p data
+          cat <<EOF > data/config.yaml
           garmin:
             login: "$GARMIN_LOGIN"
             password: "$GARMIN_PASSWORD"
@@ -25,6 +26,7 @@ jobs:
             password: "$FITBIT_PASSWORD"
           EOF
 
-          timeout 120s docker run --rm \
-            -v $(pwd)/config.yaml:/app/config.yaml \
+          timeout 45s docker run --rm \
+            -e PYTHONUNBUFFERED=1 \
+            -v $(pwd)/data:/data \
             alexxit/smartscaleconnect:latest || code=$?; if [ $code -eq 124 ] || [ $code -eq 0 ]; then exit 0; else exit $code; fi
