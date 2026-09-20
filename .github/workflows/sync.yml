@@ -7,12 +7,12 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Disassemble getWeights and GetAccount
+      - name: Dump Go types and structs
         run: |
           docker run --rm --entrypoint /bin/sh alexxit/smartscaleconnect:latest -c '
-            echo "=== FUNCTION DISASSEMBLY weights.go:82 ==="
-            objdump -d $(which scaleconnect) 2>/dev/null | grep -A 25 "<github.com/AlexxIT/SmartScaleConnect/internal.getWeights>:" | head -n 30 || true
-
-            echo "=== LADEBEFEHLE UND CONFIG STRINGS ==="
-            strings $(which scaleconnect) | grep -C 3 "load data error" || true
+            echo "=== STRUCT TYPES IN BINARY ==="
+            strings $(which scaleconnect) | grep -E "type:\.eq\.main\." || true
+            strings $(which scaleconnect) | grep -E "type:\.eq\.internal\." || true
+            echo "=== HELP TEXT OF SCALECONNECT ==="
+            scaleconnect -h || true
           '
