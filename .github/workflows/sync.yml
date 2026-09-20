@@ -33,8 +33,8 @@ jobs:
                   }
               },
               "sync_flo": {
-                  "from": "fitbit.sync_flo",
-                  "to": "garmin.sync_flo"
+                  "from": "fitbit",
+                  "to": "garmin"
               }
           }
           with open("config/scaleconnect.yaml", "w") as f:
