@@ -7,13 +7,10 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Inspect container
+      - name: Inspect container structure
         run: |
-          echo "=== HELP / ENTRYPOINT ==="
-          docker run --rm alexxit/smartscaleconnect:latest --help || true
-
-          echo "=== DATEIEN IM IMAGE ==="
-          docker run --rm alexxit/smartscaleconnect:latest ls -la /app || true
-
-          echo "=== PYTHON ENTRYPOINT DATEI ==="
-          docker run --rm alexxit/smartscaleconnect:latest cat /app/main.py 2>/dev/null || docker run --rm alexxit/smartscaleconnect:latest cat /app/app.py 2>/dev/null || true
+          docker run --rm --entrypoint sh alexxit/smartscaleconnect:latest -c "
+            echo '--- Root Verzeichnis ---'
+            ls -la /
+            echo '--- Suche nach Programmdateien ---'
+            which smartscaleconnect || which scaleconnect || find / -maxdepth 3 -name '*scale*' 2>/dev/null
