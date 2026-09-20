@@ -1,32 +1,12 @@
 name: Sync
 
 on:
-  schedule:
-    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Run sync
-        env:
-          GARMIN_LOGIN: ${{ secrets.GARMIN_LOGIN }}
-          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
-          FITBIT_LOGIN: ${{ secrets.FITBIT_LOGIN }}
-          FITBIT_PASSWORD: ${{ secrets.FITBIT_PASSWORD }}
+      - name: Show scaleconnect help
         run: |
-          mkdir -p config
-          cat <<EOF > config/scaleconnect.yaml
-          garmin:
-            login: "$GARMIN_LOGIN"
-            password: "$GARMIN_PASSWORD"
-          fitbit:
-            login: "$FITBIT_LOGIN"
-            password: "$FITBIT_PASSWORD"
-          EOF
-
-          docker run --rm \
-            -v $(pwd)/config:/config \
-            --entrypoint /bin/sh \
-            alexxit/smartscaleconnect:latest -c "scaleconnect -c /config/scaleconnect.yaml || scaleconnect -i"
+          docker run --rm --entrypoint /bin/sh alexxit/smartscaleconnect:latest -c "scaleconnect -h || scaleconnect --help || true"
