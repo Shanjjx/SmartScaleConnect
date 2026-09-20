@@ -1,13 +1,15 @@
 name: Sync
 
 on:
+  schedule:
+    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Check binary strings and test run
+      - name: Run sync
         env:
           GARMIN_LOGIN: ${{ secrets.GARMIN_LOGIN }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
@@ -15,20 +17,24 @@ jobs:
           FITBIT_PASSWORD: ${{ secrets.FITBIT_PASSWORD }}
         run: |
           mkdir -p config
-          cat <<EOF > config/scaleconnect.yaml
-          garmin:
-            login: "$GARMIN_LOGIN"
-            password: "$GARMIN_PASSWORD"
-          fitbit:
-            login: "$FITBIT_LOGIN"
-            password: "$FITBIT_PASSWORD"
-          EOF
+          python3 -c '
+          import os, yaml
+          cfg = {
+              "garmin": {
+                  "login": os.environ.get("GARMIN_LOGIN", "").strip(),
+                  "password": os.environ.get("GARMIN_PASSWORD", "").strip()
+              },
+              "fitbit": {
+                  "login": os.environ.get("FITBIT_LOGIN", "").strip(),
+                  "password": os.environ.get("FITBIT_PASSWORD", "").strip()
+              }
+          }
+          with open("config/scaleconnect.yaml", "w") as f:
+              yaml.dump(cfg, f, default_flow_style=False)
+          '
 
-          echo "=== CONFIG-TEST ==="
-          cat config/scaleconnect.yaml | sed 's/password:.*/password: ***/'
-
-          echo "=== AUSFÜHRUNG MIT VERBOSE / DEBUG ==="
-          docker run --rm -v $(pwd)/config:/config alexxit/smartscaleconnect:latest scaleconnect -c /config/scaleconnect.yaml -r 1s || true
-
-          echo "=== SCHLÜSSELWÖRTER IM BINARY ==="
-          docker run --rm --entrypoint /bin/sh alexxit/smartscaleconnect:latest -c 'strings $(which scaleconnect) | grep -iE "fitbit|garmin|config" | head -n 30'
+          echo "Starte Synchronisation..."
+          docker run --rm \
+            -v $(pwd)/config:/config \
+            alexxit/smartscaleconnect:latest \
+            scaleconnect -c /config/scaleconnect.yaml
