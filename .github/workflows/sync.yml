@@ -1,51 +1,18 @@
 name: Sync
 
 on:
-  schedule:
-    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Run sync
-        env:
-          GARMIN_LOGIN: ${{ secrets.GARMIN_LOGIN }}
-          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
-          FITBIT_LOGIN: ${{ secrets.FITBIT_LOGIN }}
-          FITBIT_PASSWORD: ${{ secrets.FITBIT_PASSWORD }}
+      - name: Disassemble getWeights and GetAccount
         run: |
-          mkdir -p config
-          python3 -c '
-          import os, yaml
-          cfg = {
-              "fitbit": {
-                  "sync_flo": {
-                      "login": os.environ.get("FITBIT_LOGIN", "").strip(),
-                      "password": os.environ.get("FITBIT_PASSWORD", "").strip()
-                  }
-              },
-              "garmin": {
-                  "sync_flo": {
-                      "login": os.environ.get("GARMIN_LOGIN", "").strip(),
-                      "password": os.environ.get("GARMIN_PASSWORD", "").strip()
-                  }
-              },
-              "sync": {
-                  "from": "fitbit:sync_flo",
-                  "to": "garmin:sync_flo"
-              }
-          }
-          with open("config/scaleconnect.yaml", "w") as f:
-              yaml.dump(cfg, f, default_flow_style=False)
+          docker run --rm --entrypoint /bin/sh alexxit/smartscaleconnect:latest -c '
+            echo "=== FUNCTION DISASSEMBLY weights.go:82 ==="
+            objdump -d $(which scaleconnect) 2>/dev/null | grep -A 25 "<github.com/AlexxIT/SmartScaleConnect/internal.getWeights>:" | head -n 30 || true
+
+            echo "=== LADEBEFEHLE UND CONFIG STRINGS ==="
+            strings $(which scaleconnect) | grep -C 3 "load data error" || true
           '
-
-          echo "=== Erstellte Konfiguration ==="
-          cat config/scaleconnect.yaml | sed 's/password:.*/password: ***/'
-
-          echo "Starte Synchronisation..."
-          docker run --rm \
-            -v $(pwd)/config:/config \
-            alexxit/smartscaleconnect:latest \
-            scaleconnect -c /config/scaleconnect.yaml
