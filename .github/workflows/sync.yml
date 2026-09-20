@@ -17,15 +17,23 @@ jobs:
           FITBIT_PASSWORD: ${{ secrets.FITBIT_PASSWORD }}
         run: |
           mkdir -p config
-          cat <<EOF > config/scaleconnect.yaml
-          garmin:
-            login: "$GARMIN_LOGIN"
-            password: "$GARMIN_PASSWORD"
-          fitbit:
-            login: "$FITBIT_LOGIN"
-            password: "$FITBIT_PASSWORD"
-          EOF
-
+          python3 -c '
+          import os, yaml
+          cfg = {
+              "garmin": {
+                  "login": os.environ["GARMIN_LOGIN"],
+                  "password": os.environ["GARMIN_PASSWORD"]
+              },
+              "fitbit": {
+                  "login": os.environ["FITBIT_LOGIN"],
+                  "password": os.environ["FITBIT_PASSWORD"]
+              }
+          }
+          with open("config/scaleconnect.yaml", "w") as f:
+              yaml.dump(cfg, f, default_flow_style=False)
+          '
+          echo "Konfiguration erfolgreich und valide erstellt."
+          
           docker run --rm \
             -v $(pwd)/config:/config \
             alexxit/smartscaleconnect:latest \
