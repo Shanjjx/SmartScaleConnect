@@ -33,7 +33,7 @@ jobs:
                   }
               },
               "sync_flo": {
-                  "from": "fitbit",
+                  "from": "fitbit.sync_flo",
                   "to": "garmin"
               }
           }
