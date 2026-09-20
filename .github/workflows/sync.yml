@@ -9,9 +9,9 @@ jobs:
     steps:
       - name: Inspect binary internals
         run: |
-          docker run --rm --entrypoint /bin/sh alexxit/smartscaleconnect:latest -c '
-            echo "=== SUCHE NACH FITBIT & GARMIN AUFRUFEN ==="
-            strings -t x $(which scaleconnect) | grep -E "fitbit|garmin|weights\.go" | head -n 40
+          docker run --rm alexxit/smartscaleconnect:latest sh -c '
+            echo "=== FITBIT & GARMIN OFFSETS ==="
+            strings -t x /bin/scaleconnect | grep -iE "fitbit|garmin|weights\.go" | head -n 40
             
-            echo "=== ALLE URL- UND PROVIDER-MUSTER ==="
-            strings $(which scaleconnect) | grep -E "^[a-z0-9_-]+://|^[a-z0-9_-]+:[a-z0-9_-]+" | head -n 30 || true
+            echo "=== SCHEMA & FORMAT STRINGS ==="
+            strings /bin/scaleconnect | grep -E "%s.*%s" | head -n 30
